@@ -1058,3 +1058,80 @@ section h3, .card h3 { color: var(--text); }
 
 /* Toast: unified — only show one variant per event */
 .toast .t-ico:empty { display: none; }
+
+
+/* Boss HP fill — gradient red/orange to match design when ui.js uses .bar-fill */
+.boss-hp > .bar-fill,
+.boss-hp > div {
+  position: absolute; inset: 0 auto 0 0; border-radius: 999px;
+  background: linear-gradient(90deg,#ff5b5b,#ff8a3d);
+  box-shadow: 0 0 14px rgba(255,90,60,.6);
+  transition: width .9s cubic-bezier(.22,.61,.36,1);
+}
+.boss-defeated .boss-hp > .bar-fill,
+.boss-defeated .boss-hp > div {
+  background: linear-gradient(90deg,#10b981,#34d399);
+  box-shadow: 0 0 14px rgba(16,185,129,.4);
+}
+
+/* Boss HP text shouldn't float — it's a sibling of .boss-hp in ui.js */
+.boss-card .boss-hp-text {
+  position: static; inset: auto;
+}
+
+/* Boss name in daily boss block */
+.boss-name { display: block; font-weight: 700; margin-bottom: 8px; font-size: 15px; }
+
+/* Boss-card daily variant inside .card (no card class on the inner) */
+.card > .boss-card { padding: 0; }
+.card > .boss-card .boss-hp-text { margin-bottom: 12px; }
+
+/* Skill-tree branch — bar in branch-head should size sensibly */
+.branch-head .bar { flex: 1; min-width: 80px; max-width: 200px; }
+.branch-head .branch-main { flex: 1; min-width: 0; }
+.branch-head .branch-main .branch-name { font-weight: 700; display: block; }
+.branch-head .branch-main .branch-lvl { font-size: 12px; color: var(--text-faint); display: block; }
+
+/* Subskill bar (already in CSS) — give it max-width */
+.subskill { gap: 12px; }
+.subskill .ss-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Streak number color */
+.streak-num { color: var(--accent); }
+
+/* Tier pill colors as backgrounds, not just text */
+.tier-pill {
+  padding: 3px 9px; border-radius: 999px;
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+}
+
+/* Quote card cite */
+.quote-card cite { display: block; }
+
+/* Make .area-{key} on tile / branch / boss override default --accent globally so progress fills get area color */
+.area-tile.area-body, .area-tile.area-mind, .area-tile.area-heart,
+.area-tile.area-wealth, .area-tile.area-social, .area-tile.area-craft, .area-tile.area-spirit { /* already accent-driven */ }
+
+/* Stat lvl color tied to the row's --accent */
+.stat-lvl { color: var(--accent); }
+
+/* Coin pill in page-head used in shop */
+.page-head .coin-pill { font-size: 14px; padding: 8px 14px; }
+
+/* Hide labelled empty heatmap */
+.heatmap { padding: 4px 2px; }
+
+/* Quest q-xp pill */
+.q-xp {
+  font-size: 12px; font-weight: 800; color: var(--accent);
+  background: var(--accent-soft); padding: 4px 8px; border-radius: 999px;
+  white-space: nowrap;
+}
+.quest-mini .q-xp { background: transparent; padding: 0; }
+
+/* Daily boss strike button on dashboard */
+.boss-card .btn-sm { font-size: 12px; padding: 6px 12px; }
+
+/* Win feed icon */
+.win-feed-item > span:first-child { font-size: 18px; }
