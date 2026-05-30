@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0" />
+  <title>LEVELING ⚡ — Hayotni darajaga ko'taring</title>
+  <meta name="description" content="LEVELING — hayotingizning har bir sohasini RPG personaji kabi darajaga ko'taring. Body, Mind, Heart, Wealth, Social, Craft, Spirit." />
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#07080f" />
+  <meta name="color-scheme" content="dark light" />
+
+  <!-- Apple -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="LEVELING" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
+
+  <!-- Fonts (cached by service worker for offline use) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Orbitron:wght@500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <!-- ===== Loading screen ===== -->
+  <div id="loading-screen" class="loading-screen" aria-hidden="true">
+    <div class="loading-logo">
+      <div class="loading-bolt">⚡</div>
+      <div class="loading-word">LEVELING</div>
+      <div class="loading-bar"><span></span></div>
+      <div class="loading-tag">Hayotning har bir sohasini darajaga ko'taring</div>
+    </div>
+  </div>
+
+  <!-- ===== Onboarding ===== -->
+  <div id="onboarding" class="onboarding hidden" aria-hidden="true"></div>
+
+  <!-- ===== App shell ===== -->
+  <div id="app" class="app hidden">
+    <!-- Desktop sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-bolt">⚡</span>
+        <span class="brand-name">LEVELING</span>
+      </div>
+      <nav id="sidebar-nav" class="sidebar-nav" aria-label="Asosiy navigatsiya"></nav>
+      <div id="sidebar-foot" class="sidebar-foot"></div>
+    </aside>
+
+    <div class="app-main">
+      <!-- Top bar -->
+      <header id="topbar" class="topbar">
+        <button class="icon-btn menu-btn" id="menu-btn" aria-label="Menyu">☰</button>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-actions">
+          <div class="power-pill" id="topbar-power" title="Total Power">
+            <span class="pill-ico">⚡</span><span class="pill-val" id="topbar-power-val">0</span>
+          </div>
+          <div class="coin-pill" id="topbar-coins" title="Coins">
+            <span class="pill-ico">🪙</span><span class="pill-val" id="topbar-coins-val">0</span>
+          </div>
+          <button class="icon-btn" id="quicklog-btn" aria-label="Tez XP qo'shish">＋</button>
+        </div>
+      </header>
+
+      <!-- Routed view -->
+      <main id="view" class="view" role="main"></main>
+    </div>
+
+    <!-- Mobile bottom nav -->
+    <nav id="bottom-nav" class="bottom-nav" aria-label="Pastki navigatsiya"></nav>
+  </div>
+
+  <!-- ===== Overlays ===== -->
+  <div id="toast-layer" class="toast-layer" aria-live="polite"></div>
+  <div id="modal-layer" class="modal-layer hidden"></div>
+  <div id="sheet-layer" class="sheet-layer hidden"></div>
+  <div id="focus-overlay" class="focus-overlay hidden"></div>
+  <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+  <div id="levelup-overlay" class="levelup-overlay hidden"></div>
+
+  <!-- ===== Libraries ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- ===== App modules (load order matters) ===== -->
+  <script src="./js/i18n.js"></script>
+  <script src="./js/data.js"></script>
+  <script src="./js/audio.js"></script>
+  <script src="./js/confetti.js"></script>
+  <script src="./js/charts.js"></script>
+  <script src="./js/gamification.js"></script>
+  <script src="./js/ui.js"></script>
+  <script src="./js/core.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
