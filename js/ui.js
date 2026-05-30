@@ -31,10 +31,14 @@
     var streak = s.streak.current || 0;
     var quests = (s.quests.daily || []).slice(0, 3);
 
-    var html = '<div class="hero"><div class="hero-bg"></div><div class="hero-row">';
-    html += '<div class="power-num">' + power + '</div>';
+    var heroAvatar = G.avatarFor();
+    var html = '<div class="hero glow"><div class="hero-bg"></div><div class="hero-row">';
+    html += '<div class="hero-avatar">' + heroAvatar + '</div>';
+    html += '<div style="flex:1;min-width:0">';
     html += '<div class="power-label">' + t('total_power') + '</div>';
-    html += '</div><div class="tag-rank">' + ri.current.emoji + ' ' + t(ri.current.key) + '</div></div>';
+    html += '<div class="power-num font-display">' + power + '</div>';
+    html += '<div class="tag-rank">' + ri.current.emoji + ' ' + t(ri.current.key) + '</div>';
+    html += '</div></div></div>';
 
     /* area tiles */
     html += '<div class="area-tiles">';
@@ -66,8 +70,10 @@
     html += '</div>';
 
     /* streak */
-    html += '<div class="card"><div class="streak-flame">' + (streak >= 3 ? '&#128293;' : '&#9723;') + '</div>';
-    html += '<div class="streak-num">' + streak + ' ' + t('days') + '</div></div>';
+    html += '<div class="card card-row"><div class="streak-flame">' + (streak >= 3 ? '&#128293;' : '&#9889;') + '</div>';
+    html += '<div style="flex:1"><div class="muted" style="font-size:12px;letter-spacing:.1em;text-transform:uppercase">' + t('streak') + '</div>';
+    html += '<div class="streak-num">' + streak + '</div></div>';
+    html += '<div class="faint" style="font-size:12px">' + t('days') + '</div></div>';
 
     /* pet */
     html += '<div class="card pet-card"><h3>' + t('your_pet') + '</h3>';
@@ -200,11 +206,11 @@
 
   function showNewBossModal() {
     var html = '<h3>' + t('new_boss') + '</h3>';
-    html += '<input id="boss-name" class="input" placeholder="Boss name" />';
-    html += '<div class="field"><label>' + t('area_body') + '</label><select id="boss-area" class="input">';
+    html += '<input id="boss-name" class="input" placeholder="' + t('new_boss') + '" />';
+    html += '<div class="field"><select id="boss-area" class="input">';
     for (var i = 0; i < AREAS.length; i++) { html += '<option value="' + AREAS[i].key + '">' + AREAS[i].icon + ' ' + t('area_' + AREAS[i].key) + '</option>'; }
     html += '</select></div>';
-    html += '<div class="field"><label>Tier</label><select id="boss-tier" class="input"><option value="mini">' + t('tier_mini') + '</option><option value="elite">' + t('tier_elite') + '</option><option value="epic">' + t('tier_epic') + '</option><option value="legendary">' + t('tier_legendary') + '</option></select></div>';
+    html += '<div class="field"><select id="boss-tier" class="input"><option value="mini">' + t('tier_mini') + '</option><option value="elite">' + t('tier_elite') + '</option><option value="epic">' + t('tier_epic') + '</option><option value="legendary">' + t('tier_legendary') + '</option></select></div>';
     html += '<button class="btn btn-primary" id="boss-create-btn">' + t('create') + '</button>';
     LV.Core.showModal(html);
     setTimeout(function() {
@@ -275,7 +281,8 @@
     html += '</div>';
     view.innerHTML = html;
 
-    document.getElementById('quest-tabs').addEventListener('click', function(e) {
+    var tabsEl = document.getElementById('quest-tabs');
+    if (tabsEl) tabsEl.addEventListener('click', function(e) {
       var btn = e.target.closest('.seg-btn');
       if (btn) { view.dataset.questTab = btn.dataset.tab; renderQuests(view); }
     });
@@ -288,7 +295,7 @@
     var ri = G.nextRankInfo();
     var avatar = G.avatarFor();
 
-    var html = '<div class="char-hero">';
+    var html = '<div class="char-hero card">';
     html += '<div class="char-avatar">' + avatar + '</div>';
     html += '<div class="char-name">' + esc(s.profile.name) + '</div>';
     html += '<div class="tag-rank">' + ri.current.emoji + ' ' + t(ri.current.key) + '</div>';
@@ -528,7 +535,8 @@
     html += '<div class="card"><p>' + t('focus_intro') + '</p>';
     html += '<button class="btn btn-primary" id="open-focus-btn">' + t('start') + ' ' + t('focus_session') + '</button></div>';
     view.innerHTML = html;
-    document.getElementById('open-focus-btn').addEventListener('click', function() { openFocusOverlay(); });
+    var openBtn = document.getElementById('open-focus-btn');
+    if (openBtn) openBtn.addEventListener('click', function() { openFocusOverlay(); });
   }
 
   function openFocusOverlay() {
@@ -537,10 +545,11 @@
     overlay.classList.remove('hidden');
     focusSeconds = focusDuration;
     focusRunning = false;
-    var html = '<button class="focus-close" id="focus-close-btn">&times;</button>';
-    html += '<div class="focus-ring" id="focus-ring" style="--p:100"><div class="focus-timer" id="focus-timer">' + fmtTime(focusSeconds) + '</div></div>';
+    var html = '<button class="focus-close icon-btn" id="focus-close-btn">&times;</button>';
+    html += '<div class="focus-inner">';
+    html += '<div class="focus-ring" id="focus-ring" style="--p:100"><div class="focus-timer font-display" id="focus-timer">' + fmtTime(focusSeconds) + '</div></div>';
     html += '<div class="focus-controls">';
-    html += '<button class="btn" id="focus-start-btn">' + t('start') + '</button>';
+    html += '<button class="btn btn-accent" id="focus-start-btn">' + t('start') + '</button>';
     html += '<button class="btn" id="focus-pause-btn">' + t('pause') + '</button>';
     html += '<button class="btn" id="focus-reset-btn">' + t('reset') + '</button>';
     html += '</div>';
@@ -551,7 +560,7 @@
       var active = LV.Audio.currentAmbient && LV.Audio.currentAmbient() === sn;
       html += '<button class="sound-btn' + (active ? ' active' : '') + '" data-snd="' + sn + '">' + sn + '</button>';
     }
-    html += '</div>';
+    html += '</div></div>';
     overlay.innerHTML = html;
     document.getElementById('focus-close-btn').addEventListener('click', closeFocusOverlay);
     document.getElementById('focus-start-btn').addEventListener('click', startFocus);
@@ -734,28 +743,31 @@
     html += '<div class="settings-group"><h3>' + t('about') + '</h3><p>LEVELING v1.0</p></div>';
     view.innerHTML = html;
 
-    document.getElementById('theme-seg').addEventListener('click', function(e) {
+    var bind = function(id, ev, fn) { var el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
+
+    bind('theme-seg', 'click', function(e) {
       var btn = e.target.closest('.seg-btn');
       if (!btn) return;
       settings.theme = btn.dataset.th; D.save(); LV.Core.applyTheme(); renderSettings(view);
     });
-    document.getElementById('accent-row').addEventListener('click', function(e) {
+    bind('accent-row', 'click', function(e) {
       var sw = e.target.closest('.swatch');
       if (!sw) return;
       settings.accent = sw.dataset.accent; D.save(); LV.Core.applyAccent(settings.accent); renderSettings(view);
     });
-    document.getElementById('lang-select').addEventListener('change', function(e) {
-      settings.lang = e.target.value; D.save(); LV.i18n.setLang(settings.lang); LV.Core.navigate('settings');
+    bind('lang-select', 'change', function(e) {
+      settings.lang = e.target.value; D.save(); LV.i18n.setLang(settings.lang);
+      LV.Core.renderNav(); LV.Core.navigate('settings');
     });
-    document.getElementById('snd-toggle').addEventListener('change', function(e) { settings.sound = e.target.checked; D.save(); LV.Audio.setEnabled(settings.sound); });
-    document.getElementById('hap-toggle').addEventListener('change', function(e) { settings.haptics = e.target.checked; D.save(); });
-    document.getElementById('plus-toggle').addEventListener('change', function(e) { settings.plusMode = e.target.checked; D.save(); });
-    document.getElementById('export-btn').addEventListener('click', function() {
+    bind('snd-toggle', 'change', function(e) { settings.sound = e.target.checked; D.save(); LV.Audio.setEnabled(settings.sound); });
+    bind('hap-toggle', 'change', function(e) { settings.haptics = e.target.checked; D.save(); });
+    bind('plus-toggle', 'change', function(e) { settings.plusMode = e.target.checked; D.save(); });
+    bind('export-btn', 'click', function() {
       var blob = new Blob([D.exportJSON()], { type: 'application/json' });
       var url = URL.createObjectURL(blob); var a2 = document.createElement('a');
       a2.href = url; a2.download = 'leveling-backup.json'; a2.click(); URL.revokeObjectURL(url);
     });
-    document.getElementById('import-btn').addEventListener('click', function() {
+    bind('import-btn', 'click', function() {
       var inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json';
       inp.addEventListener('change', function() {
         var file = inp.files && inp.files[0]; if (!file) return;
@@ -764,7 +776,7 @@
         reader.readAsText(file);
       }); inp.click();
     });
-    document.getElementById('reset-btn').addEventListener('click', function() {
+    bind('reset-btn', 'click', function() {
       if (confirm(t('reset_confirm'))) { D.reset(); location.reload(); }
     });
   }

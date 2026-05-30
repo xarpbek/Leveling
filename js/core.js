@@ -196,10 +196,24 @@
   }
 
   function applyAccent(color) {
+    var doc = document.documentElement;
     if (color && color !== 'auto') {
-      document.documentElement.style.setProperty('--accent', color);
+      doc.style.setProperty('--accent', color);
+      // Compute readable on-accent color (black for light bgs, white for dark)
+      try {
+        var hex = color.replace('#', '');
+        if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        var r = parseInt(hex.substr(0,2),16);
+        var g = parseInt(hex.substr(2,2),16);
+        var b = parseInt(hex.substr(4,2),16);
+        var lum = (0.299*r + 0.587*g + 0.114*b) / 255;
+        doc.style.setProperty('--on-accent', lum > 0.6 ? '#0f1322' : '#ffffff');
+        doc.style.setProperty('--accent-soft', 'color-mix(in srgb, ' + color + ' 16%, transparent)');
+      } catch (e) {}
     } else {
-      document.documentElement.style.removeProperty('--accent');
+      doc.style.removeProperty('--accent');
+      doc.style.removeProperty('--on-accent');
+      doc.style.removeProperty('--accent-soft');
     }
   }
 
@@ -320,6 +334,20 @@
     if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
 
     var key = e.key;
+    /* Escape: close any open overlay */
+    if (key === 'Escape') {
+      var ml = document.getElementById('modal-layer');
+      var sl = document.getElementById('sheet-layer');
+      var fo = document.getElementById('focus-overlay');
+      if (ml && !ml.classList.contains('hidden')) { hideModal(); return; }
+      if (sl && !sl.classList.contains('hidden')) { hideSheet(); return; }
+      if (fo && !fo.classList.contains('hidden')) {
+        fo.classList.add('hidden'); fo.innerHTML = '';
+        if (LV.Audio && LV.Audio.stopAmbient) LV.Audio.stopAmbient();
+        return;
+      }
+    }
+    /* Number 1-9: jump to nth route */
     if (key >= '1' && key <= '9') {
       var idx = parseInt(key, 10) - 1;
       if (idx < ROUTES.length) {
@@ -328,6 +356,7 @@
       }
       return;
     }
+    /* L: open quick log */
     if (key === 'l' || key === 'L') {
       if (LV.UI && typeof LV.UI.showQuickLog === 'function') {
         e.preventDefault();

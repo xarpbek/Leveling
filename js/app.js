@@ -79,18 +79,25 @@
 
   function wireEvents() {
     LV.Game.on('xp', function(data) {
+      if (!data || data.amount <= 0) return;
       var ai = LV.Data.area(data.area);
       var color = ai ? ai.color : '';
       var x = data.x || (window.innerWidth / 2);
-      var y = data.y || 80;
+      var y = data.y || 100;
       LV.Core.showXPFloat(data.amount, x, y, color);
-      LV.Core.showToast({ icon: ai ? ai.icon : '&#9889;', text: '+' + data.amount + ' XP', xp: data.amount, type: 'xp' });
+      if (LV.Audio && LV.Audio.play && data.src !== 'boss-attack' && data.src !== 'daily-boss') LV.Audio.play('xp');
       LV.Core.haptic('light');
       LV.Core.updateTopbar();
     });
 
     LV.Game.on('levelup', function(data) {
       LV.UI.showLevelUp(data.area, data.level);
+      LV.Core.updateTopbar();
+    });
+
+    LV.Game.on('rankup', function(data) {
+      LV.Core.showToast({ icon: data.rank.emoji || '\uD83C\uDF1F', text: LV.t('rank') + ': ' + LV.t(data.rank.key) });
+      if (LV.Confetti && LV.Confetti.celebrate) LV.Confetti.celebrate();
     });
 
     LV.Game.on('achievement', function(data) {
@@ -98,33 +105,37 @@
       var name = data.ach && data.ach.name ? (data.ach.name[lang] || data.ach.name.en) : '';
       LV.Core.showToast({ icon: data.ach.icon, text: LV.t('achievement_unlocked') + ' ' + name });
       if (LV.Audio && LV.Audio.play) LV.Audio.play('achievement');
-      if (LV.Confetti && LV.Confetti.burst) LV.Confetti.burst({ x: window.innerWidth / 2, y: window.innerHeight / 2, count: 40 });
+      if (LV.Confetti && LV.Confetti.burst) LV.Confetti.burst({ x: window.innerWidth / 2, y: window.innerHeight / 2, count: 60 });
+      LV.Core.updateTopbar();
     });
 
     LV.Game.on('boss', function(data) {
-      LV.Core.showToast({ icon: '&#9876;', text: LV.t('boss_defeated') });
+      LV.Core.showToast({ icon: '\u2694\uFE0F', text: LV.t('boss_defeated') });
       if (LV.Audio && LV.Audio.play) LV.Audio.play('boss');
-      if (LV.Confetti && LV.Confetti.celebrate) LV.Confetti.celebrate(['#f59e0b', '#ef4444']);
+      if (LV.Confetti && LV.Confetti.celebrate) LV.Confetti.celebrate(['#f59e0b', '#ef4444', '#fff']);
+      LV.Core.updateTopbar();
     });
 
     LV.Game.on('quest', function(data) {
-      LV.Core.showToast({ icon: '&#128220;', text: LV.t('quest_complete') });
+      LV.Core.showToast({ icon: '\uD83D\uDCDC', text: LV.t('quest_complete') });
       if (LV.Audio && LV.Audio.play) LV.Audio.play('quest');
+      LV.Core.updateTopbar();
     });
 
     LV.Game.on('title', function(data) {
       var name = data.title ? LV.Game.titleName(data.title.id) : '';
-      LV.Core.showToast({ icon: '&#127941;', text: LV.t('title_earned', { t: name }) });
+      LV.Core.showToast({ icon: '\uD83C\uDFC5', text: LV.t('title_earned', { t: name }) });
+      LV.Core.updateTopbar();
     });
 
     LV.Game.on('combo', function(data) {
-      LV.Core.showToast({ icon: '&#128279;', text: LV.t('combo_bonus', { n: '20' }) });
+      LV.Core.showToast({ icon: '\uD83D\uDD17', text: LV.t('combo_bonus', { n: '20' }) });
     });
 
     LV.Game.on('perfectday', function() {
-      LV.Core.showToast({ icon: '&#127752;', text: LV.t('perfect_day') });
+      LV.Core.showToast({ icon: '\uD83C\uDF08', text: LV.t('perfect_day') });
       if (LV.Audio && LV.Audio.play) LV.Audio.play('perfect');
-      if (LV.Confetti && LV.Confetti.celebrate) LV.Confetti.celebrate(['#10b981', '#3b82f6', '#f59e0b']);
+      if (LV.Confetti && LV.Confetti.celebrate) LV.Confetti.celebrate(['#10b981', '#3b82f6', '#f59e0b', '#ec4899']);
     });
   }
 
