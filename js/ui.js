@@ -177,7 +177,7 @@
 
     /* user bosses */
     if (bosses.length === 0) {
-      html += '<p class="muted">' + t('no_bosses') + '</p>';
+      html += '<div class="empty"><div class="e-ico">\u2694\uFE0F</div><p class="muted">' + t('no_bosses') + '</p></div>';
     } else {
       for (var i = 0; i < bosses.length; i++) {
         var b = bosses[i];
@@ -189,7 +189,18 @@
         html += '<div class="boss-hp"><div class="bar-fill" style="width:' + bPct + '%"></div></div>';
         html += '<span class="boss-hp-text">' + b.hp + ' / ' + b.hpMax + ' HP</span>';
         if (b.defeatedAt) html += '<span class="tag-rank">' + t('defeated') + '</span>';
-        else html += '<button class="btn btn-sm" data-boss-hit="' + b.id + '">' + t('deal_damage') + '</button>';
+        else html += '<button class="btn btn-sm btn-primary" data-boss-hit="' + b.id + '">' + t('deal_damage') + '</button>';
+        /* Damage log (last 5) */
+        if (b.log && b.log.length > 0) {
+          html += '<details class="damage-log"><summary class="muted" style="font-size:12px;cursor:pointer;margin-top:10px">' + t('damage_log') + ' (' + b.log.length + ')</summary>';
+          var entries = b.log.slice(-5).reverse();
+          for (var li = 0; li < entries.length; li++) {
+            var entry = entries[li];
+            var when = new Date(entry.ts);
+            html += '<div style="font-size:12px;color:var(--text-faint);padding:4px 0">-' + entry.dmg + ' HP — ' + when.toLocaleDateString() + '</div>';
+          }
+          html += '</details>';
+        }
         html += '</div>';
       }
     }
@@ -229,30 +240,45 @@
   /* ======================== QUESTS ======================== */
   function renderQuests(view) {
     var s = D.get();
-    var tabs = ['daily', 'weekly', 'monthly', 'epic', 'hidden'];
+    var tabs = ['daily', 'weekly', 'monthly', 'epic', 'hidden', 'pro'];
     var activeTab = view.dataset.questTab || 'daily';
 
     var html = '<div class="page-head"><h2>' + t('nav_quests') + '</h2></div>';
     html += '<div class="segment" id="quest-tabs">';
     for (var i = 0; i < tabs.length; i++) {
-      html += '<button class="seg-btn' + (tabs[i] === activeTab ? ' active' : '') + '" data-tab="' + tabs[i] + '">' + t(tabs[i]) + '</button>';
+      var label = tabs[i] === 'pro' ? t('pro_quests') : t(tabs[i]);
+      html += '<button class="seg-btn' + (tabs[i] === activeTab ? ' active' : '') + '" data-tab="' + tabs[i] + '">' + label + '</button>';
     }
     html += '</div>';
 
     var list = [];
     if (activeTab === 'epic') list = s.quests.epic || [];
     else if (activeTab === 'hidden') list = s.quests.hidden || [];
+    else if (activeTab === 'pro') list = D.PRO_QUESTS;
     else list = s.quests[activeTab] || [];
 
     html += '<div class="quest-list">';
-    if (activeTab === 'hidden') {
+    if (activeTab === 'pro') {
+      var lang = LV.i18n.getLang();
+      for (var pi = 0; pi < D.PRO_QUESTS.length; pi++) {
+        var pq = D.PRO_QUESTS[pi];
+        var doneT = G.proDoneToday(pq.id);
+        var ai = areaInfo(pq.area);
+        html += '<div class="quest-card area-' + pq.area + (doneT ? ' done' : '') + '" data-pid="' + pq.id + '">';
+        html += '<span class="quest-type-dot" style="background:' + ai.color + ';box-shadow:0 0 8px ' + ai.color + '"></span>';
+        html += '<span>' + pq.icon + ' ' + esc(pq.text[lang] || pq.text.en) + '</span>';
+        html += '<span class="q-xp">+' + pq.xp + ' XP</span>';
+        if (!doneT) html += '<button class="btn btn-sm btn-primary" data-pro="' + pq.id + '" style="grid-column:1/-1">' + t('done') + '</button>';
+        html += '</div>';
+      }
+    } else if (activeTab === 'hidden') {
+      var lang2 = LV.i18n.getLang();
       for (var h = 0; h < G.HIDDEN.length; h++) {
         var hd = G.HIDDEN[h];
         var unlocked = list.some(function(x) { return x.id === hd.id; });
-        var lang = LV.i18n.getLang();
         html += '<div class="quest-card' + (unlocked ? ' done' : ' locked') + '">';
         html += '<span class="quest-type-dot qt-hidden"></span>';
-        html += '<span>' + hd.icon + ' ' + (unlocked ? (hd.name[lang] || hd.name.en) : '???') + '</span>';
+        html += '<span>' + hd.icon + ' ' + (unlocked ? (hd.name[lang2] || hd.name.en) : '???') + '</span>';
         html += '<span class="q-xp">+' + hd.xp + '</span></div>';
       }
     } else if (activeTab === 'epic') {
@@ -262,20 +288,26 @@
         html += '<div class="quest-card' + (ep.done ? ' done' : '') + '">';
         html += '<span class="quest-type-dot qt-epic"></span>';
         html += '<span>' + esc(questText(ep)) + '</span>';
+        html += '<span class="q-xp">+' + ep.xp + '</span>';
         html += '<div class="quest-progress-row"><div class="bar"><div class="bar-fill" style="width:' + Math.round(epProg.pct) + '%"></div></div>';
         html += '<span>' + epProg.value + '/' + ep.target + '</span></div>';
-        html += '<span class="q-xp">+' + ep.xp + '</span></div>';
+        html += '</div>';
       }
     } else {
+      if (list.length === 0) {
+        html += '<div class="empty"><div class="e-ico">\uD83D\uDCDC</div><p class="muted">' + t('no_wins') + '</p></div>';
+      }
       for (var k = 0; k < list.length; k++) {
         var qst = list[k];
         var qPct = pct(qst.progress, qst.target);
-        html += '<div class="quest-card' + (qst.done ? ' done' : '') + '">';
+        var areaCls = qst.area ? ' area-' + qst.area : '';
+        html += '<div class="quest-card' + areaCls + (qst.done ? ' done' : '') + '">';
         html += '<span class="quest-type-dot qt-' + activeTab + '"></span>';
         html += '<span>' + esc(questText(qst)) + '</span>';
+        html += '<span class="q-xp">+' + qst.xp + '</span>';
         html += '<div class="quest-progress-row"><div class="bar"><div class="bar-fill" style="width:' + qPct + '%"></div></div>';
         html += '<span>' + qst.progress + '/' + qst.target + '</span></div>';
-        html += '<span class="q-xp">+' + qst.xp + ' XP</span></div>';
+        html += '</div>';
       }
     }
     html += '</div>';
@@ -285,6 +317,10 @@
     if (tabsEl) tabsEl.addEventListener('click', function(e) {
       var btn = e.target.closest('.seg-btn');
       if (btn) { view.dataset.questTab = btn.dataset.tab; renderQuests(view); }
+    });
+    view.addEventListener('click', function(e) {
+      var pBtn = e.target.closest('[data-pro]');
+      if (pBtn) { G.doProQuest(pBtn.dataset.pro); renderQuests(view); }
     });
   }
 
@@ -337,6 +373,22 @@
     }
     html += '</div></div>';
 
+    /* achievement showcase: last 6 unlocked */
+    var unlockedIds = Object.keys(s.achievements || {}).sort(function(a,b){return (s.achievements[b]||'').localeCompare(s.achievements[a]||'');}).slice(0,6);
+    if (unlockedIds.length > 0) {
+      html += '<div class="card"><h3>' + t('achievements_showcase') + '</h3><div class="grid-auto">';
+      var lang = LV.i18n.getLang();
+      for (var au = 0; au < unlockedIds.length; au++) {
+        var ach = G.ACH.find(function(x){return x.id === unlockedIds[au];});
+        if (!ach) continue;
+        var aname = (ach.name && (ach.name[lang] || ach.name.en)) || ach.id;
+        html += '<div class="ach-card rarity-' + ach.rarity + '">';
+        html += '<span class="a-ico">' + ach.icon + '</span>';
+        html += '<span class="a-name">' + esc(aname) + '</span></div>';
+      }
+      html += '</div></div>';
+    }
+
     view.innerHTML = html;
 
     view.addEventListener('click', function(e) {
@@ -374,10 +426,10 @@
       html += '</div>';
     }
 
-    /* heatmap */
-    html += '<div class="card"><h3>Heatmap</h3><div class="heatmap">';
+    /* heatmap — 365 days, GitHub-style */
+    html += '<div class="card"><h3>Heatmap (365 ' + t('days') + ')</h3><div class="heatmap">';
     var today = LV.util.todayStr();
-    for (var d = 89; d >= 0; d--) {
+    for (var d = 364; d >= 0; d--) {
       var ds = LV.util.dateAdd(today, -d);
       var count = 0;
       for (var hi = 0; hi < habits.length; hi++) { if (habits[hi].history && habits[hi].history[ds]) count++; }
@@ -404,6 +456,7 @@
     for (var i = 0; i < AREAS.length; i++) { html += '<option value="' + AREAS[i].key + '">' + AREAS[i].icon + ' ' + t('area_' + AREAS[i].key) + '</option>'; }
     html += '</select></div>';
     html += '<div class="field"><select id="habit-diff" class="input"><option value="easy">' + t('easy') + '</option><option value="medium" selected>' + t('medium') + '</option><option value="hard">' + t('hard') + '</option></select></div>';
+    html += '<div class="field"><select id="habit-freq" class="input"><option value="daily" selected>' + t('daily_freq') + '</option><option value="weekly">' + t('weekly_freq') + '</option></select></div>';
     html += '<button class="btn btn-sm" id="habit-tpl-btn">' + t('habit_templates') + '</button>';
     html += '<div id="habit-tpl-list" class="hidden"></div>';
     html += '<button class="btn btn-primary" id="habit-save-btn">' + t('create') + '</button>';
@@ -414,7 +467,8 @@
         var name = (document.getElementById('habit-name') || {}).value;
         var area = (document.getElementById('habit-area') || {}).value || 'body';
         var diff = (document.getElementById('habit-diff') || {}).value || 'medium';
-        if (name) { G.addHabit({ name: name, area: area, difficulty: diff }); LV.Core.hideModal(); LV.Core.navigate('habits'); }
+        var freq = (document.getElementById('habit-freq') || {}).value || 'daily';
+        if (name) { G.addHabit({ name: name, area: area, difficulty: diff, frequency: freq }); LV.Core.hideModal(); LV.Core.navigate('habits'); }
       });
       var tplBtn = document.getElementById('habit-tpl-btn');
       if (tplBtn) tplBtn.addEventListener('click', function() {
@@ -506,11 +560,15 @@
 
   function showNewTaskModal() {
     var html = '<h3>' + t('new_task') + '</h3>';
+    html += '<div style="position:relative">';
     html += '<input id="task-title" class="input" placeholder="' + t('new_task') + '" />';
+    html += '<button class="btn-icon" id="task-voice-btn" type="button" style="position:absolute;right:6px;top:6px" title="' + t('voice') + '">&#127908;</button>';
+    html += '</div>';
     html += '<div class="field"><select id="task-area" class="input">';
     for (var i = 0; i < AREAS.length; i++) { html += '<option value="' + AREAS[i].key + '">' + AREAS[i].icon + ' ' + t('area_' + AREAS[i].key) + '</option>'; }
     html += '</select></div>';
     html += '<div class="field"><select id="task-prio" class="input"><option value="low">' + t('low') + '</option><option value="medium" selected>' + t('medium') + '</option><option value="high">' + t('high') + '</option></select></div>';
+    html += '<div class="field"><label>' + t('deadline') + '</label><input type="date" id="task-deadline" class="input" /></div>';
     html += '<button class="btn btn-primary" id="task-save-btn">' + t('create') + '</button>';
     LV.Core.showModal(html);
     setTimeout(function() {
@@ -519,9 +577,36 @@
         var title = (document.getElementById('task-title') || {}).value;
         var area = (document.getElementById('task-area') || {}).value || 'mind';
         var prio = (document.getElementById('task-prio') || {}).value || 'medium';
-        if (title) { G.addTask({ title: title, area: area, priority: prio }); LV.Core.hideModal(); LV.Core.navigate('tasks'); }
+        var deadline = (document.getElementById('task-deadline') || {}).value || null;
+        if (title) { G.addTask({ title: title, area: area, priority: prio, deadline: deadline }); LV.Core.hideModal(); LV.Core.navigate('tasks'); }
+      });
+      var vBtn = document.getElementById('task-voice-btn');
+      if (vBtn) vBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        startVoiceInput('task-title', vBtn);
       });
     }, 50);
+  }
+
+  /* Web Speech API voice input */
+  function startVoiceInput(targetId, btn) {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { LV.Core.showToast({ icon: '\uD83C\uDFA4', text: t('voice_unsupported') }); return; }
+    var rec = new SR();
+    var lang = LV.i18n.getLang();
+    rec.lang = lang === 'uz' ? 'uz-UZ' : (lang === 'ru' ? 'ru-RU' : 'en-US');
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    if (btn) btn.classList.add('recording');
+    LV.Core.showToast({ icon: '\uD83C\uDFA4', text: t('voice_listening') });
+    rec.onresult = function(e) {
+      var text = e.results[0][0].transcript;
+      var input = document.getElementById(targetId);
+      if (input) input.value = (input.value ? input.value + ' ' : '') + text;
+    };
+    rec.onerror = function() { if (btn) btn.classList.remove('recording'); };
+    rec.onend = function() { if (btn) btn.classList.remove('recording'); };
+    try { rec.start(); } catch (e) { if (btn) btn.classList.remove('recording'); }
   }
 
   /* ======================== FOCUS ======================== */
@@ -545,9 +630,18 @@
     overlay.classList.remove('hidden');
     focusSeconds = focusDuration;
     focusRunning = false;
+    var quote = G.quote();
     var html = '<button class="focus-close icon-btn" id="focus-close-btn">&times;</button>';
+    html += '<div class="focus-bg"></div>';
     html += '<div class="focus-inner">';
+    html += '<div class="muted" style="font-style:italic;margin-bottom:18px;font-size:14px">"' + esc(quote.text) + '"<br><span style="font-size:12px">— ' + esc(quote.by) + '</span></div>';
     html += '<div class="focus-ring" id="focus-ring" style="--p:100"><div class="focus-timer font-display" id="focus-timer">' + fmtTime(focusSeconds) + '</div></div>';
+    html += '<div class="segment" id="focus-duration" style="margin-top:18px">';
+    var durs = [25, 45, 60, 90];
+    for (var di = 0; di < durs.length; di++) {
+      html += '<button class="seg-btn' + (durs[di] === focusDuration / 60 ? ' active' : '') + '" data-dur="' + durs[di] + '">' + durs[di] + '\u202F' + t('minutes') + '</button>';
+    }
+    html += '</div>';
     html += '<div class="focus-controls">';
     html += '<button class="btn btn-accent" id="focus-start-btn">' + t('start') + '</button>';
     html += '<button class="btn" id="focus-pause-btn">' + t('pause') + '</button>';
@@ -562,11 +656,24 @@
     }
     html += '</div></div>';
     overlay.innerHTML = html;
-    document.getElementById('focus-close-btn').addEventListener('click', closeFocusOverlay);
-    document.getElementById('focus-start-btn').addEventListener('click', startFocus);
-    document.getElementById('focus-pause-btn').addEventListener('click', pauseFocus);
-    document.getElementById('focus-reset-btn').addEventListener('click', resetFocus);
-    overlay.querySelector('.sound-grid').addEventListener('click', function(e) {
+    var byId = function(id){return document.getElementById(id);};
+    if (byId('focus-close-btn')) byId('focus-close-btn').addEventListener('click', closeFocusOverlay);
+    if (byId('focus-start-btn')) byId('focus-start-btn').addEventListener('click', startFocus);
+    if (byId('focus-pause-btn')) byId('focus-pause-btn').addEventListener('click', pauseFocus);
+    if (byId('focus-reset-btn')) byId('focus-reset-btn').addEventListener('click', resetFocus);
+    var durEl = byId('focus-duration');
+    if (durEl) durEl.addEventListener('click', function(e) {
+      var btn = e.target.closest('.seg-btn');
+      if (!btn || focusRunning) return;
+      focusDuration = parseInt(btn.dataset.dur, 10) * 60;
+      focusSeconds = focusDuration;
+      var btns = durEl.querySelectorAll('.seg-btn');
+      for (var bi = 0; bi < btns.length; bi++) btns[bi].classList.remove('active');
+      btn.classList.add('active');
+      updateFocusDisplay();
+    });
+    var sg = overlay.querySelector('.sound-grid');
+    if (sg) sg.addEventListener('click', function(e) {
       var btn = e.target.closest('.sound-btn');
       if (!btn) return;
       var snd = btn.dataset.snd;
@@ -610,17 +717,136 @@
     if (overlay) { overlay.classList.add('hidden'); overlay.innerHTML = ''; }
   }
 
+  /* ======================== TIMELINE (LEVELING X) ======================== */
+  function renderTimeline(view) {
+    var s = D.get();
+    var m = G.metrics();
+
+    var html = '<div class="page-head"><h2>\uD83D\uDDFA\uFE0F ' + t('lifetime_tracker') + '</h2></div>';
+
+    if (m.power < 50) {
+      html += '<div class="empty"><div class="e-ico">\uD83C\uDF1F</div><h3>' + t('lifetime_tracker') + '</h3>';
+      html += '<p>' + t('total_power') + ' 50+ — Hozir: ' + m.power + '. ' + t('skill_tree_intro') + '</p></div>';
+    }
+
+    /* Build a list of milestones sorted chronologically, last 50 */
+    var milestones = [];
+    var created = new Date(s.createdAt);
+    milestones.push({ ts: created.getTime(), title: 'Sayohat boshlandi \u2728', sub: s.profile.name + ' — ' + LV.util.todayStr(created) });
+
+    Object.keys(s.achievements || {}).forEach(function(id) {
+      var ach = G.ACH.find(function(x){return x.id === id;});
+      if (!ach) return;
+      var lang = LV.i18n.getLang();
+      var name = (ach.name && (ach.name[lang] || ach.name.en)) || id;
+      milestones.push({ ts: new Date(s.achievements[id]).getTime(), title: ach.icon + ' ' + name, sub: t('achievement_unlocked') });
+    });
+
+    (s.bosses || []).forEach(function(b){
+      if (b.defeatedAt) {
+        var ai = areaInfo(b.area);
+        milestones.push({ ts: new Date(b.defeatedAt).getTime(), title: '\u2694\uFE0F ' + b.name, sub: t('boss_defeated') + ' (' + t('tier_' + b.tier) + ')' });
+      }
+    });
+
+    milestones.sort(function(a,b){return b.ts - a.ts;});
+    milestones = milestones.slice(0, 50);
+
+    if (milestones.length > 0) {
+      html += '<div class="card">';
+      for (var i = 0; i < milestones.length; i++) {
+        var ms = milestones[i];
+        var dt = new Date(ms.ts);
+        html += '<div class="timeline-item">';
+        html += '<div class="tl-dot"></div>';
+        html += '<div class="tl-date muted">' + dt.toLocaleDateString() + '</div>';
+        html += '<div style="font-weight:600;margin-top:2px">' + esc(ms.title) + '</div>';
+        html += '<div class="muted" style="font-size:12px">' + esc(ms.sub) + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    /* Lifetime stats summary */
+    html += '<div class="card"><h3>' + t('lifetime_stats') + '</h3><div class="stats-grid">';
+    html += '<div><strong>' + m.totalXP + '</strong><span>' + t('total_xp') + '</span></div>';
+    html += '<div><strong>' + m.daysActive + '</strong><span>' + t('days_active') + '</span></div>';
+    html += '<div><strong>' + m.longest + '</strong><span>' + t('longest_streak') + '</span></div>';
+    html += '<div><strong>' + m.bossesDefeated + '</strong><span>' + t('boss_defeated') + '</span></div>';
+    html += '<div><strong>' + m.focusMinutes + '</strong><span>' + t('minutes') + '</span></div>';
+    html += '<div><strong>' + m.perfectDays + '</strong><span>' + t('perfect_day') + '</span></div>';
+    html += '</div></div>';
+
+    view.innerHTML = html;
+  }
+
   /* ======================== ANALYTICS ======================== */
   function renderAnalytics(view) {
+    var s = D.get();
     var m = G.metrics();
-    var html = '<div class="page-head"><h2>' + t('nav_analytics') + '</h2></div>';
+
+    /* compute weekly + monthly XP */
+    var nowD = new Date();
+    var thisWeekStart = LV.util.dateAdd(LV.util.todayStr(), -6);
+    var lastWeekStart = LV.util.dateAdd(LV.util.todayStr(), -13);
+    var lastWeekEnd = LV.util.dateAdd(LV.util.todayStr(), -7);
+    var thisMonthStart = LV.util.dateAdd(LV.util.todayStr(), -29);
+    var lastMonthStart = LV.util.dateAdd(LV.util.todayStr(), -59);
+    var lastMonthEnd = LV.util.dateAdd(LV.util.todayStr(), -30);
+
+    function sumXPInRange(startD, endD) {
+      var total = 0;
+      for (var i = 0; i < s.log.length; i++) {
+        var ev = s.log[i];
+        if (ev.xp <= 0) continue;
+        var d = LV.util.todayStr(new Date(ev.ts));
+        if (d >= startD && d <= endD) total += ev.xp;
+      }
+      return total;
+    }
+    var thisWeekXP = sumXPInRange(thisWeekStart, LV.util.todayStr());
+    var lastWeekXP = sumXPInRange(lastWeekStart, lastWeekEnd);
+    var thisMonthXP = sumXPInRange(thisMonthStart, LV.util.todayStr());
+    var lastMonthXP = sumXPInRange(lastMonthStart, lastMonthEnd);
+
+    var html = '<div class="page-head"><h2>' + t('nav_analytics') + '</h2>';
+    html += '<button class="btn btn-sm" id="print-report-btn">\uD83D\uDDA8\uFE0F ' + t('print_report') + '</button></div>';
+
     html += '<div class="card"><h3>' + t('area_balance') + '</h3><canvas id="analytics-radar" width="280" height="280"></canvas></div>';
-    html += '<div class="card"><h3>' + t('xp_over_time') + '</h3><canvas id="analytics-line" width="400" height="200"></canvas></div>';
+    html += '<div class="card"><h3>' + t('xp_over_time') + ' (30d)</h3><canvas id="analytics-line" width="400" height="200"></canvas></div>';
     html += '<div class="card"><h3>' + t('total_power') + '</h3><canvas id="analytics-pie" width="280" height="280"></canvas></div>';
+
+    /* week compare */
+    var wkPct = lastWeekXP > 0 ? Math.round((thisWeekXP - lastWeekXP) / lastWeekXP * 100) : (thisWeekXP > 0 ? 100 : 0);
+    var moPct = lastMonthXP > 0 ? Math.round((thisMonthXP - lastMonthXP) / lastMonthXP * 100) : (thisMonthXP > 0 ? 100 : 0);
+    html += '<div class="card"><h3>' + t('week_compare') + '</h3>';
+    html += '<div class="stats-grid">';
+    html += '<div><strong>' + thisWeekXP + '</strong><span>' + t('this_week') + '</span></div>';
+    html += '<div><strong>' + lastWeekXP + '</strong><span>' + t('last_week') + '</span></div>';
+    html += '<div><strong style="color:' + (wkPct >= 0 ? '#10b981' : '#ef4444') + '">' + (wkPct >= 0 ? '+' : '') + wkPct + '%</strong><span>diff</span></div>';
+    html += '</div></div>';
+
+    html += '<div class="card"><h3>' + t('month_compare') + '</h3>';
+    html += '<div class="stats-grid">';
+    html += '<div><strong>' + thisMonthXP + '</strong><span>' + t('this_month') + '</span></div>';
+    html += '<div><strong>' + lastMonthXP + '</strong><span>' + t('last_month') + '</span></div>';
+    html += '<div><strong style="color:' + (moPct >= 0 ? '#10b981' : '#ef4444') + '">' + (moPct >= 0 ? '+' : '') + moPct + '%</strong><span>diff</span></div>';
+    html += '</div></div>';
+
+    /* streak history (last 30 days dotted) */
+    html += '<div class="card"><h3>' + t('streak_history') + '</h3><div class="heatmap" style="grid-auto-flow:column;grid-template-rows:repeat(1,1fr)">';
+    for (var d = 29; d >= 0; d--) {
+      var ds = LV.util.dateAdd(LV.util.todayStr(), -d);
+      var active = !!s.daysActive[ds];
+      html += '<div class="heat-cell heat-' + (active ? '4' : '0') + '" title="' + ds + '"></div>';
+    }
+    html += '</div><div style="margin-top:8px"><span class="font-num" style="font-size:24px;color:var(--accent)">' + m.streak + '</span> <span class="muted">' + t('streak') + ' (' + t('longest_streak') + ': ' + m.longest + ')</span></div></div>';
+
     html += '<div class="card"><h3>' + t('insights') + '</h3>';
     html += '<p>' + t('best_area') + ': ' + areaInfo(m.best).icon + ' ' + t('area_' + m.best) + ' (' + t('lvl') + ' ' + m.areaLevels[m.best] + ')</p>';
     html += '<p>' + t('weakest_area') + ': ' + areaInfo(m.worst).icon + ' ' + t('area_' + m.worst) + ' (' + t('lvl') + ' ' + m.areaLevels[m.worst] + ')</p>';
-    html += '<p>' + t('life_balance') + ': ' + m.balance + '%</p></div>';
+    html += '<p>' + t('life_balance') + ': <strong style="color:var(--accent)">' + m.balance + '%</strong></p></div>';
+
     view.innerHTML = html;
     setTimeout(function() {
       var rc = document.getElementById('analytics-radar');
@@ -631,7 +857,7 @@
       }
       var lc = document.getElementById('analytics-line');
       if (lc && LV.Charts.line) {
-        var xpData = G.xpByDay(14);
+        var xpData = G.xpByDay(30);
         var lLabels = xpData.map(function(d) { return d.date.slice(5); });
         var lData = xpData.map(function(d) { return d.xp; });
         LV.Charts.line(lc, lLabels, lData);
@@ -643,6 +869,8 @@
         var pColors = AREAS.map(function(ar) { return ar.color; });
         LV.Charts.pie(pc, pLabels, pData, pColors);
       }
+      var pBtn = document.getElementById('print-report-btn');
+      if (pBtn) pBtn.addEventListener('click', function(){ window.print(); });
     }, 50);
   }
 
@@ -669,30 +897,40 @@
   function renderShop(view) {
     var s = D.get();
     var shopItems = [
-      { id: 'theme_neon', name: 'Neon Theme', icon: '&#127752;', price: 100, cat: 'themes' },
-      { id: 'theme_ocean', name: 'Ocean Theme', icon: '&#127754;', price: 100, cat: 'themes' },
-      { id: 'theme_sunset', name: 'Sunset Theme', icon: '&#127749;', price: 100, cat: 'themes' },
-      { id: 'pet_dragon', name: 'Dragon Skin', icon: '&#128009;', price: 200, cat: 'pet_skins' },
-      { id: 'pet_phoenix', name: 'Phoenix Skin', icon: '&#128038;', price: 200, cat: 'pet_skins' },
-      { id: 'frame_gold', name: 'Gold Frame', icon: '&#128293;', price: 150, cat: 'avatar_frames' },
-      { id: 'frame_diamond', name: 'Diamond Frame', icon: '&#128142;', price: 250, cat: 'avatar_frames' },
-      { id: 'sound_lo', name: 'Lo-Fi Pack', icon: '&#127925;', price: 80, cat: 'sound_packs' },
-      { id: 'sound_nature', name: 'Nature Pack', icon: '&#127795;', price: 80, cat: 'sound_packs' }
+      { id: 'theme_neon', name: 'Neon Theme', icon: '\uD83C\uDF1F', price: 100, cat: 'themes' },
+      { id: 'theme_ocean', name: 'Ocean Theme', icon: '\uD83C\uDF0A', price: 100, cat: 'themes' },
+      { id: 'theme_sunset', name: 'Sunset Theme', icon: '\uD83C\uDF05', price: 100, cat: 'themes' },
+      { id: 'pet_dragon', name: 'Dragon Skin', icon: '\uD83D\uDC09', price: 200, cat: 'pet_skins' },
+      { id: 'pet_phoenix', name: 'Phoenix Skin', icon: '\uD83D\uDD25', price: 200, cat: 'pet_skins' },
+      { id: 'frame_gold', name: 'Gold Frame', icon: '\uD83D\uDD25', price: 150, cat: 'avatar_frames' },
+      { id: 'frame_diamond', name: 'Diamond Frame', icon: '\uD83D\uDC8E', price: 250, cat: 'avatar_frames' },
+      { id: 'sound_lo', name: 'Lo-Fi Pack', icon: '\uD83C\uDFB5', price: 80, cat: 'sound_packs' },
+      { id: 'sound_nature', name: 'Nature Pack', icon: '\uD83C\uDF33', price: 80, cat: 'sound_packs' },
+      { id: 'title_shadow', name: 'Shadow Hunter', icon: '\uD83C\uDFAF', price: 300, cat: 'titles', isTitle: true },
+      { id: 'title_ascended', name: 'Ascended', icon: '\u2728', price: 500, cat: 'titles', isTitle: true },
+      { id: 'title_mystic', name: 'Mystic', icon: '\uD83D\uDD2E', price: 400, cat: 'titles', isTitle: true }
     ];
     var html = '<div class="page-head"><h2>' + t('nav_shop') + '</h2>';
-    html += '<div class="coin-pill"><span class="pill-ico">&#129689;</span><span>' + s.coins + '</span></div></div>';
-    html += '<div class="grid-auto">';
-    for (var i = 0; i < shopItems.length; i++) {
-      var item = shopItems[i];
-      var owned = (s.shop.owned || []).indexOf(item.id) >= 0;
-      html += '<div class="shop-item' + (owned ? ' owned' : '') + '" data-sid="' + item.id + '" data-price="' + item.price + '">';
-      html += '<span class="si-ico">' + item.icon + '</span>';
-      html += '<span class="si-name">' + item.name + '</span>';
-      html += '<span class="si-price">' + (owned ? t('owned') : '&#129689; ' + item.price) + '</span>';
-      if (!owned) html += '<button class="btn btn-sm">' + t('buy') + '</button>';
+    html += '<div class="coin-pill"><span class="pill-ico">\uD83E\uDE99</span><span>' + s.coins + '</span></div></div>';
+
+    var cats = ['themes', 'pet_skins', 'avatar_frames', 'sound_packs', 'titles'];
+    for (var ci = 0; ci < cats.length; ci++) {
+      var cat = cats[ci];
+      var items = shopItems.filter(function(x){return x.cat === cat;});
+      html += '<div class="section-title">' + t(cat === 'titles' ? 'titles' : cat) + '</div>';
+      html += '<div class="grid-auto">';
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        var owned = (s.shop.owned || []).indexOf(item.id) >= 0;
+        html += '<div class="shop-item' + (owned ? ' owned' : '') + '" data-sid="' + item.id + '" data-price="' + item.price + '" data-istitle="' + (item.isTitle?'1':'0') + '">';
+        html += '<span class="si-ico">' + item.icon + '</span>';
+        html += '<span class="si-name">' + item.name + '</span>';
+        html += '<span class="si-price">' + (owned ? t('owned') : '\uD83E\uDE99 ' + item.price) + '</span>';
+        if (!owned) html += '<button class="btn btn-sm btn-primary">' + t('buy') + '</button>';
+        html += '</div>';
+      }
       html += '</div>';
     }
-    html += '</div>';
     view.innerHTML = html;
     view.addEventListener('click', function(e) {
       var shopEl = e.target.closest('.shop-item');
@@ -734,7 +972,13 @@
     html += '<div class="settings-group">';
     html += '<div class="set-row"><span>' + t('sound') + '</span><label class="switch"><input type="checkbox" id="snd-toggle"' + (settings.sound ? ' checked' : '') + ' /><span class="slider"></span></label></div>';
     html += '<div class="set-row"><span>' + t('haptics') + '</span><label class="switch"><input type="checkbox" id="hap-toggle"' + (settings.haptics ? ' checked' : '') + ' /><span class="slider"></span></label></div>';
+    html += '<div class="set-row"><span>' + t('notifications') + '</span><label class="switch"><input type="checkbox" id="notif-toggle"' + (settings.notifications ? ' checked' : '') + ' /><span class="slider"></span></label></div>';
     html += '<div class="set-row"><span>' + t('plus_mode') + '</span><label class="switch"><input type="checkbox" id="plus-toggle"' + (settings.plusMode ? ' checked' : '') + ' /><span class="slider"></span></label></div>';
+    html += '</div>';
+    html += '<div class="settings-group"><h3>' + t('shortcuts') + '</h3>';
+    html += '<div class="set-row"><span>' + t('shortcut_q') + '</span><span class="kbd">L</span></div>';
+    html += '<div class="set-row"><span>' + t('shortcut_n') + '</span><span class="kbd">1-9</span></div>';
+    html += '<div class="set-row"><span>' + t('shortcut_esc') + '</span><span class="kbd">ESC</span></div>';
     html += '</div>';
     html += '<div class="settings-group"><h3>' + t('data') + '</h3>';
     html += '<button class="btn" id="export-btn">' + t('export_data') + '</button> ';
@@ -762,6 +1006,26 @@
     bind('snd-toggle', 'change', function(e) { settings.sound = e.target.checked; D.save(); LV.Audio.setEnabled(settings.sound); });
     bind('hap-toggle', 'change', function(e) { settings.haptics = e.target.checked; D.save(); });
     bind('plus-toggle', 'change', function(e) { settings.plusMode = e.target.checked; D.save(); });
+    bind('notif-toggle', 'change', function(e) {
+      var checked = e.target.checked;
+      if (checked && 'Notification' in window) {
+        if (Notification.permission === 'granted') {
+          settings.notifications = true; D.save();
+          LV.Core.showToast({ icon: '\uD83D\uDD14', text: t('reminder_set') });
+          try { new Notification('LEVELING ⚡', { body: 'Bildirishnomalar yoqildi!', icon: 'icons/icon-192.png' }); } catch(_) {}
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then(function(p) {
+            if (p === 'granted') { settings.notifications = true; D.save(); LV.Core.showToast({ icon: '\uD83D\uDD14', text: t('reminder_set') }); }
+            else { settings.notifications = false; e.target.checked = false; D.save(); LV.Core.showToast({ text: t('notif_blocked') }); }
+          });
+        } else {
+          e.target.checked = false; settings.notifications = false; D.save();
+          LV.Core.showToast({ text: t('notif_blocked') });
+        }
+      } else {
+        settings.notifications = checked; D.save();
+      }
+    });
     bind('export-btn', 'click', function() {
       var blob = new Blob([D.exportJSON()], { type: 'application/json' });
       var url = URL.createObjectURL(blob); var a2 = document.createElement('a');
@@ -950,6 +1214,48 @@
     }, 3500);
   }
 
+  /* ======================== INTERACTIVE TOUR ======================== */
+  function showTour(onDone) {
+    var steps = [
+      { title: t('tour_intro_title'), body: t('tour_intro') },
+      { title: t('total_power'), body: 'Bu yerda umumiy quvvatingiz va rankingiz ko\'rinadi. 7 ta sohani rivojlantiring.' },
+      { title: t('todays_quests'), body: 'Har kuni 3 ta vazifa avtomatik tarzda berilad. Ularni bajarib XP oling.' },
+      { title: t('quick_log'), body: '+ tugmasi orqali tezda XP qo\'sha olasiz. Yoki "L" tugmasi yordamida.' },
+      { title: t('streak'), body: 'Har kun faol bo\'ling. Streak qancha uzun bo\'lsa, mukofot shuncha katta!' }
+    ];
+    var step = 0;
+    function render() {
+      var html = '<h3>' + esc(steps[step].title) + '</h3>';
+      html += '<p class="muted">' + esc(steps[step].body) + '</p>';
+      html += '<div class="onb-steps">';
+      for (var i = 0; i < steps.length; i++) html += '<span class="onb-dot' + (i === step ? ' active' : '') + '"></span>';
+      html += '</div>';
+      html += '<div class="onb-actions">';
+      if (step > 0) html += '<button class="btn" id="tour-back">' + t('back') + '</button>';
+      html += '<button class="btn" id="tour-skip">' + t('skip') + '</button>';
+      html += '<button class="btn btn-primary" id="tour-next">' + (step === steps.length - 1 ? t('tour_done') : t('next')) + '</button>';
+      html += '</div>';
+      LV.Core.showModal(html);
+      setTimeout(function() {
+        var nb = document.getElementById('tour-next');
+        var bb = document.getElementById('tour-back');
+        var sk = document.getElementById('tour-skip');
+        if (nb) nb.addEventListener('click', function() {
+          if (step === steps.length - 1) { LV.Core.hideModal(); finish(); }
+          else { step++; render(); }
+        });
+        if (bb) bb.addEventListener('click', function() { step--; render(); });
+        if (sk) sk.addEventListener('click', function() { LV.Core.hideModal(); finish(); });
+      }, 50);
+    }
+    function finish() {
+      var s = D.get();
+      s.tourDone = true; D.save();
+      if (typeof onDone === 'function') onDone();
+    }
+    render();
+  }
+
   /* ======================== EXPORT ======================== */
   LV.UI = {
     renderDashboard: renderDashboard,
@@ -964,9 +1270,11 @@
     renderAchievements: renderAchievements,
     renderShop: renderShop,
     renderSettings: renderSettings,
+    renderTimeline: renderTimeline,
     showQuickLog: showQuickLog,
     showOnboarding: showOnboarding,
-    showLevelUp: showLevelUp
+    showLevelUp: showLevelUp,
+    showTour: showTour
   };
 
 })(window.LV = window.LV || {});

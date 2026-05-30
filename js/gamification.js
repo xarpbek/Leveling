@@ -499,6 +499,24 @@
     a('mythic', '🌌', 'legendary', 500, { uz: 'Mifik', en: 'Mythic', ru: 'Мифик' }, { uz: 'Mythic rankka yeting', en: 'Reach Mythic rank', ru: 'Достигните ранга Мифик' }, (m) => m.power >= 600),
     a('balanced_20', '🕊️', 'legendary', 400, { uz: 'Garmoniya', en: 'Harmony', ru: 'Гармония' }, { uz: 'Barcha sohalar 20-daraja', en: 'All areas to level 20', ru: 'Все сферы до 20' }, (m) => Math.min.apply(null, Object.values(m.areaLevels)) >= 20),
     a('collector', '🎖️', 'legendary', 300, { uz: 'Kollektsioner', en: 'Collector', ru: 'Коллекционер' }, { uz: '10 unvon to\'plang', en: 'Earn 10 titles', ru: 'Получите 10 титулов' }, (m) => m.titlesCount >= 10),
+
+    // additional achievements (16 more — total 52)
+    a('xp_1000', '💯', 'common', 30, { uz: '1000 XP', en: '1000 XP', ru: '1000 XP' }, { uz: '1000 jami XP', en: 'Earn 1000 total XP', ru: 'Заработать 1000 XP' }, (m) => m.totalXP >= 1000),
+    a('xp_10k', '🎆', 'rare', 80, { uz: '10K XP', en: '10K XP', ru: '10K XP' }, { uz: '10 000 jami XP', en: 'Earn 10,000 total XP', ru: '10 000 XP' }, (m) => m.totalXP >= 10000),
+    a('xp_100k', '🌌', 'epic', 200, { uz: '100K XP', en: '100K XP', ru: '100K XP' }, { uz: '100 000 jami XP', en: 'Earn 100K total XP', ru: '100 000 XP' }, (m) => m.totalXP >= 100000),
+    a('focus_60min', '⏰', 'rare', 60, { uz: 'Bir soatlik fokus', en: 'Hour of Power', ru: 'Час силы' }, { uz: '60 daqiqa fokus', en: '60 minutes of focus', ru: '60 минут фокуса' }, (m) => m.focusMinutes >= 60),
+    a('focus_500min', '🧘', 'epic', 130, { uz: 'Chuqur amaliyot', en: 'Deep Practice', ru: 'Глубокая практика' }, { uz: '500 daqiqa fokus', en: '500 minutes of focus', ru: '500 минут фокуса' }, (m) => m.focusMinutes >= 500),
+    a('balanced_5', '⚖️', 'rare', 70, { uz: 'Birinchi muvozanat', en: 'First Balance', ru: 'Первый баланс' }, { uz: 'Barcha sohalar 5+', en: 'All areas to level 5', ru: 'Все сферы до 5' }, (m) => Math.min.apply(null, Object.values(m.areaLevels)) >= 5),
+    a('streak_14', '⚡', 'rare', 60, { uz: 'Ikki hafta', en: 'Fortnight', ru: 'Две недели' }, { uz: '14 kunlik streak', en: '14-day streak', ru: 'Серия 14 дней' }, (m) => m.longest >= 14),
+    a('streak_60', '🌟', 'epic', 150, { uz: 'Olti oy', en: 'Sixty', ru: 'Шестьдесят' }, { uz: '60 kunlik streak', en: '60-day streak', ru: 'Серия 60 дней' }, (m) => m.longest >= 60),
+    a('streak_365', '🌠', 'legendary', 600, { uz: 'Bir yil!', en: 'A Year!', ru: 'Целый год!' }, { uz: '365 kunlik streak', en: '365-day streak', ru: 'Серия 365 дней' }, (m) => m.longest >= 365),
+    a('quests_50', '📚', 'epic', 150, { uz: 'Quest ustasi', en: 'Quest Master', ru: 'Мастер квестов' }, { uz: '50 vazifa', en: 'Complete 50 quests', ru: '50 квестов' }, (m) => m.questsCompleted >= 50),
+    a('habits_10', '🏆', 'epic', 120, { uz: 'Odatlar arxitektori', en: 'Habit Architect', ru: 'Архитектор привычек' }, { uz: '10 ta odat', en: 'Create 10 habits', ru: '10 привычек' }, (m, s) => s.habits.length >= 10),
+    a('tasks_100', '⚙️', 'epic', 150, { uz: 'Yuz vazifa', en: 'Hundred Tasks', ru: 'Сто задач' }, { uz: '100 vazifa', en: '100 tasks done', ru: '100 задач' }, (m) => m.tasksCompleted >= 100),
+    a('coins_500', '💰', 'rare', 70, { uz: 'Boylik', en: 'Wealthy', ru: 'Богач' }, { uz: '500 tanga', en: 'Hold 500 coins', ru: '500 монет' }, (m, s) => s.coins >= 500),
+    a('coins_2k', '💎', 'epic', 140, { uz: 'Magnat yo\'lida', en: 'Tycoon Path', ru: 'Путь магната' }, { uz: '2000 tanga', en: 'Hold 2000 coins', ru: '2000 монет' }, (m, s) => s.coins >= 2000),
+    a('all_areas_active', '🎯', 'rare', 60, { uz: 'Hayotning hammasi', en: 'Full Spectrum', ru: 'Полный спектр' }, { uz: 'Har bir soha 1+ daraja', en: 'Every area at level 1+', ru: 'Каждая сфера 1+' }, (m) => Math.min.apply(null, Object.values(m.areaLevels)) >= 1),
+    a('pro_5', '🌍', 'epic', 130, { uz: 'Comfort zonadan tashqari', en: 'Beyond Comfort', ru: 'За пределами зоны' }, { uz: '5 ta real-world quest', en: 'Do 5 real-world quests', ru: '5 реальных квестов' }, (m) => m.proDone >= 5),
   ];
   function a(id, icon, rarity, xp, name, desc, check) { return { id, icon, rarity, xp, name, desc, check }; }
   const ACH_COINS = { common: 10, rare: 25, epic: 60, legendary: 150 };

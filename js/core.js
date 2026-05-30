@@ -8,14 +8,16 @@
   /* ----------------------------- Routes ----------------------------- */
   var ROUTES = [
     'dashboard', 'skills', 'bosses', 'quests', 'character',
-    'habits', 'tasks', 'focus', 'analytics', 'achievements', 'shop', 'settings'
+    'habits', 'tasks', 'focus', 'analytics', 'achievements', 'shop',
+    'timeline', 'settings'
   ];
 
   var NAV_ICONS = {
-    dashboard: '\uD83D\uDCCA', skills: '\uD83C\uDF33', bosses: '\u2694\uFE0F',
-    quests: '\uD83D\uDCDC', character: '\uD83E\uDDD1', habits: '\u2705',
-    tasks: '\uD83D\uDCCB', focus: '\uD83C\uDFAF', analytics: '\uD83D\uDCC8',
-    achievements: '\uD83C\uDFC6', shop: '\uD83D\uDED2', settings: '\u2699\uFE0F'
+    dashboard: '\uD83C\uDFE0', skills: '\uD83C\uDF33', bosses: '\u2694\uFE0F',
+    quests: '\uD83D\uDCDC', character: '\uD83C\uDFAE', habits: '\u2705',
+    tasks: '\uD83D\uDCCB', focus: '\uD83D\uDD25', analytics: '\uD83D\uDCC8',
+    achievements: '\uD83C\uDFC6', shop: '\uD83D\uDED2',
+    timeline: '\uD83D\uDDFA\uFE0F', settings: '\u2699\uFE0F'
   };
 
   var BOTTOM_NAV_ITEMS = [
@@ -41,7 +43,8 @@
     location.hash = '#/' + route;
     renderView(route);
     markActiveNav();
-    updateTopbar(LV.t('nav_' + route));
+    var titleKey = route === 'timeline' ? 'lifetime_tracker' : 'nav_' + route;
+    updateTopbar(LV.t(titleKey));
   }
 
   function renderView(route) {
@@ -61,7 +64,8 @@
       currentRoute = route;
       renderView(route);
       markActiveNav();
-      updateTopbar(LV.t('nav_' + route));
+      var titleKey = route === 'timeline' ? 'lifetime_tracker' : 'nav_' + route;
+      updateTopbar(LV.t(titleKey));
     }
   }
 
@@ -73,8 +77,9 @@
     for (var i = 0; i < ROUTES.length; i++) {
       var r = ROUTES[i];
       var active = r === currentRoute ? ' active' : '';
+      var labelKey = r === 'timeline' ? 'lifetime_tracker' : 'nav_' + r;
       html += '<a class="side-link' + active + '" data-route="' + r + '">' +
-        '<span class="sl-ico">' + NAV_ICONS[r] + '</span> ' + LV.t('nav_' + r) + '</a>';
+        '<span class="sl-ico">' + NAV_ICONS[r] + '</span> ' + LV.t(labelKey) + '</a>';
     }
     nav.innerHTML = html;
     nav.addEventListener('click', function (e) {
@@ -129,8 +134,9 @@
     var html = '<div class="sheet-list">';
     for (var i = 0; i < moreRoutes.length; i++) {
       var r = moreRoutes[i];
+      var labelKey = r === 'timeline' ? 'lifetime_tracker' : 'nav_' + r;
       html += '<a class="sheet-link" data-route="' + r + '">' +
-        '<span class="sl-ico">' + NAV_ICONS[r] + '</span> ' + LV.t('nav_' + r) + '</a>';
+        '<span class="sl-ico">' + NAV_ICONS[r] + '</span> ' + LV.t(labelKey) + '</a>';
     }
     html += '</div>';
     showSheet(html);

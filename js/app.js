@@ -41,6 +41,13 @@
       LV.Data.seedDemo();
       LV.Data.save();
       showApp();
+      /* Show interactive tour after a short delay */
+      setTimeout(function() {
+        var s = LV.Data.get();
+        if (!s.tourDone && LV.UI && LV.UI.showTour) {
+          LV.UI.showTour();
+        }
+      }, 600);
     });
   }
 

@@ -1135,3 +1135,83 @@ section h3, .card h3 { color: var(--text); }
 
 /* Win feed icon */
 .win-feed-item > span:first-child { font-size: 18px; }
+
+
+
+/* ===================================================================== */
+/*  v1.2 polish — voice rec, timeline, kbd, sheet visibility             */
+/* ===================================================================== */
+
+/* Voice button recording state */
+.btn-icon.recording {
+  color: #ff4757; border-color: rgba(255,71,87,.45); background: rgba(255,71,87,.08);
+  animation: recPulse 1.2s ease-in-out infinite;
+}
+@keyframes recPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,71,87,.45); }
+  50%     { box-shadow: 0 0 0 8px rgba(255,71,87,0); }
+}
+
+/* Timeline */
+.timeline-item {
+  position: relative; padding: 8px 0 18px 26px;
+  border-left: 2px solid var(--border);
+}
+.timeline-item:last-child { border-left-color: transparent; }
+.timeline-item .tl-dot {
+  position: absolute; left: -7px; top: 12px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 12px var(--accent);
+}
+.timeline-item .tl-date { font-size: 12px; color: var(--text-faint); }
+
+/* Damage log details element */
+details.damage-log[open] summary { color: var(--accent); }
+details.damage-log summary::-webkit-details-marker { display: none; }
+details.damage-log summary::before { content: '\25B8 '; }
+details.damage-log[open] summary::before { content: '\25BE '; }
+
+/* Kbd shortcuts pill */
+.kbd {
+  display: inline-block;
+  font-family: 'Space Grotesk', monospace;
+  font-size: 12px; font-weight: 700;
+  padding: 3px 9px; border-radius: 6px;
+  background: var(--surface-2); border: 1px solid var(--border-strong);
+  color: var(--accent);
+}
+
+/* Sheet/modal visibility helpers */
+.sheet-layer.hidden, .modal-layer.hidden { display: none !important; }
+
+/* Print styles for analytics report */
+@media print {
+  body { background: white !important; color: black !important; }
+  .topbar, .sidebar, .bottom-nav, .toast-layer, .modal-layer, .sheet-layer,
+  .focus-overlay, .levelup-overlay, .confetti-canvas, #quicklog-btn, .btn,
+  .page-head .btn, .icon-btn { display: none !important; }
+  .card, .hero { background: white !important; color: black !important;
+    border: 1px solid #ccc !important; box-shadow: none !important;
+    backdrop-filter: none !important; page-break-inside: avoid; }
+  .view { padding: 12px !important; max-width: 100% !important; }
+}
+
+/* Improved empty state */
+.empty .e-ico { font-size: 48px; margin-bottom: 12px; opacity: .8; }
+
+/* Pro quests done state with area tint */
+.quest-card.area-body.done { background: color-mix(in srgb, var(--area-body) 8%, var(--surface)); }
+.quest-card.area-mind.done { background: color-mix(in srgb, var(--area-mind) 8%, var(--surface)); }
+.quest-card.area-heart.done { background: color-mix(in srgb, var(--area-heart) 8%, var(--surface)); }
+.quest-card.area-wealth.done { background: color-mix(in srgb, var(--area-wealth) 8%, var(--surface)); }
+.quest-card.area-social.done { background: color-mix(in srgb, var(--area-social) 8%, var(--surface)); }
+.quest-card.area-craft.done { background: color-mix(in srgb, var(--area-craft) 8%, var(--surface)); }
+.quest-card.area-spirit.done { background: color-mix(in srgb, var(--area-spirit) 8%, var(--surface)); }
+
+/* Focus duration segment fits well in narrow width */
+#focus-duration { display: inline-flex; }
+#focus-duration .seg-btn { font-size: 12px; padding: 6px 10px; }
+
+/* Onboarding actions: centered button row */
+.onb-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+.onb-actions .btn { min-width: 100px; }
