@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Create js/core.js - App infrastructure including hash router, navigation renderers, theme manager, modal/sheet/overlay helpers, topbar updater, and keyboard shortcuts",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Create /projects/sandbox/leveling/js/core.js using IIFE pattern (function(LV){...})(window.LV = window.LV || {})",
     "Implement hash router: parse location.hash to route name, support #/dashboard, #/skills, #/bosses, #/quests, #/character, #/habits, #/tasks, #/focus, #/analytics, #/achievements, #/shop, #/settings. Default to #/dashboard. Listen to hashchange event.",
@@ -28,5 +28,5 @@
   ],
   "verification": ["env -u NODE_OPTIONS node --check js/core.js"],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "js/ui.js does not exist yet (FEAT-002). core.js guards all LV.UI calls with existence checks so it works standalone. Node --check passes. All 14 exported functions verified present."
 }

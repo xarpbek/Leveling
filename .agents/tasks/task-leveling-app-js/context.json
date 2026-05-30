@@ -1,0 +1,28 @@
+{
+  "project_type": "Vanilla JavaScript PWA (no build tools, no bundler)",
+  "language": "JavaScript (ES5+ IIFE modules on window.LV namespace)",
+  "build_system": "None - static files served directly. Script load order in index.html matters.",
+  "test_framework": "None - verify with node --check for syntax validation",
+  "build_command": "env -u NODE_OPTIONS node --check js/ui.js js/core.js js/app.js",
+  "test_command": "env -u NODE_OPTIONS node --check js/ui.js js/core.js js/app.js",
+  "verification_instructions": "Run: env -u NODE_OPTIONS node --check js/ui.js js/core.js js/app.js - all 3 files must pass syntax check without errors",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "No setup needed - pure static web project",
+  "environment_constraints": "INTEGRATIONS_ONLY network - no npm install, no external packages. Node.js available for syntax checking only.",
+  "contribution_requirements": "DO NOT modify any existing files. Only CREATE js/ui.js, js/core.js, js/app.js",
+  "key_patterns": "All modules use IIFE pattern: (function(LV){ ... })(window.LV = window.LV || {}). Exports go on LV.ModuleName. LV.Data provides state/constants. LV.Game provides gamification engine with event bus (on/off/emit). LV.t(key) for i18n. LV.Audio.play(name) for SFX. LV.Confetti.celebrate() for confetti. LV.Charts.radar/line/pie for charts. CSS classes from style.css must be used exactly.",
+  "relevant_files": [
+    "js/ui.js (TO CREATE - all 12 page renderers + overlays)",
+    "js/core.js (TO CREATE - router, nav, theme, modals, topbar)",
+    "js/app.js (TO CREATE - bootstrap, event wiring, service worker)",
+    "index.html (reference - DOM structure with IDs)",
+    "style.css (reference - all CSS classes)",
+    "js/data.js (reference - LV.Data API, constants, state shape)",
+    "js/gamification.js (reference - LV.Game API, event bus)",
+    "js/i18n.js (reference - LV.t() and LV.i18n API)",
+    "js/audio.js (reference - LV.Audio API)",
+    "js/confetti.js (reference - LV.Confetti API)",
+    "js/charts.js (reference - LV.Charts API)"
+  ],
+  "directory_structure": "Flat structure: index.html at root, all JS in js/, icons in icons/, style.css + manifest.json + sw.js at root"
+}
