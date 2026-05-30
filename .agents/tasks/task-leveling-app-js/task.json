@@ -1,0 +1,7 @@
+{
+  "task_id": "task-leveling-app-js",
+  "task_description": "Create 3 JavaScript files (js/ui.js, js/core.js, js/app.js) to complete the LEVELING PWA application. These files implement all 12 page renderers, the hash router, navigation, theme management, and app bootstrap with event wiring.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}

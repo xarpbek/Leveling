@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Create js/core.js - App infrastructure including hash router, navigation renderers, theme manager, modal/sheet/overlay helpers, topbar updater, and keyboard shortcuts",
+  "status": "completed",
+  "steps": [
+    "Create /projects/sandbox/leveling/js/core.js using IIFE pattern (function(LV){...})(window.LV = window.LV || {})",
+    "Implement hash router: parse location.hash to route name, support #/dashboard, #/skills, #/bosses, #/quests, #/character, #/habits, #/tasks, #/focus, #/analytics, #/achievements, #/shop, #/settings. Default to #/dashboard. Listen to hashchange event.",
+    "Implement sidebar nav renderer for desktop (#sidebar-nav): render all 12 page links using .side-link and .sl-ico classes. Mark active with .active class. Each link navigates via hash.",
+    "Implement bottom nav renderer for mobile (#bottom-nav): render 5 .nav-item elements (Dashboard, Habits, Focus, Quests, More). 'More' opens a sheet with remaining pages.",
+    "Implement theme manager: read settings.theme from LV.Data.get(), apply data-theme attribute to <html>. Support 'dark', 'light', 'system'. For 'system', use matchMedia('(prefers-color-scheme: dark)') and listen for changes.",
+    "Implement accent color manager: support custom accent colors via CSS custom property override on :root",
+    "Implement modal helper: showModal(contentHTML) shows #modal-layer with .modal inside, hideModal() hides it. Click backdrop to close.",
+    "Implement sheet helper: showSheet(contentHTML) shows #sheet-layer with .sheet inside (including .sheet-grip), hideSheet() hides it. Click backdrop to close.",
+    "Implement topbar updater: updateTopbar(pageTitle) sets #topbar-title text, updates #topbar-power-val with LV.Game.totalPower(), updates #topbar-coins-val with LV.Data.get().coins",
+    "Implement toast system: showToast({icon, text, type, xp}) appends .toast to #toast-layer, auto-removes after 3s with .out animation",
+    "Implement floating XP animation: showXPFloat(amount, x, y, color) creates .xp-float element at position",
+    "Implement haptics helper: haptic(type) calls navigator.vibrate() if settings.haptics is true",
+    "Implement keyboard shortcuts: 1-9 for page navigation, L for quick log",
+    "Export LV.Core with: navigate(route), showModal, hideModal, showSheet, hideSheet, updateTopbar, showToast, showXPFloat, haptic, applyTheme, initRouter, renderNav"
+  ],
+  "acceptance_criteria": [
+    "env -u NODE_OPTIONS node --check js/core.js passes without errors",
+    "LV.Core is exported with navigate, showModal, hideModal, showSheet, hideSheet, updateTopbar, showToast, showXPFloat, haptic, applyTheme, initRouter, renderNav functions",
+    "Router supports all 12 routes and defaults to dashboard",
+    "Bottom nav shows Dashboard, Habits, Focus, Quests, More (5 items)",
+    "Sidebar nav shows all 12 pages"
+  ],
+  "verification": ["env -u NODE_OPTIONS node --check js/core.js"],
+  "blocked_reason": null,
+  "findings": "js/ui.js does not exist yet (FEAT-002). core.js guards all LV.UI calls with existence checks so it works standalone. Node --check passes. All 14 exported functions verified present."
+}

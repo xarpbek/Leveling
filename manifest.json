@@ -1,0 +1,56 @@
+{
+  "name": "LEVELING ⚡ — Life RPG",
+  "short_name": "LEVELING",
+  "description": "Hayotning har bir sohasini darajaga ko'taring. A premium life-gamification RPG that levels up Body, Mind, Heart, Wealth, Social, Craft and Spirit.",
+  "lang": "uz",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "/leveling/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#07080f",
+  "theme_color": "#07080f",
+  "categories": ["productivity", "lifestyle", "health"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Focus Mode",
+      "short_name": "Focus",
+      "url": "./index.html#/focus",
+      "description": "Cinematic Pomodoro focus session"
+    },
+    {
+      "name": "Quest Log",
+      "short_name": "Quests",
+      "url": "./index.html#/quests",
+      "description": "Today's quests and challenges"
+    },
+    {
+      "name": "Skill Tree",
+      "short_name": "Skills",
+      "url": "./index.html#/skills",
+      "description": "Your 7-branch life skill tree"
+    }
+  ]
+}
